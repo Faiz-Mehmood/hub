@@ -16,8 +16,8 @@
     --accent: #00e5a0; --accent2: #00b4d8; --text: #e2f5ec; --muted: #2a5040;
   }
   body { background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;cursor:none;overflow-x:hidden; }
-  #cursor { transition:opacity 0.15s,width 0.15s,height 0.15s;width:10px;height:10px;background:var(--accent);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen; }
-  #cursor-ring { width:32px;height:32px;border:1.5px solid var(--accent);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);opacity:0.4;transition:width 0.3s,height 0.3s; }
+  #cursor { transition:opacity 0.15s,width 0.15s,height 0.15s;width:12px;height:12px;background:var(--accent);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen; }
+  #cursor-ring { width:36px;height:36px;border:1.5px solid var(--accent);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);opacity:0.4;transition:width 0.3s,height 0.3s; }
   body.on-link #cursor { width:20px;height:20px;opacity:1; }
   body.on-link #cursor-ring { width:52px;height:52px;opacity:0.8; }
   #grid-bg { position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,160,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,160,0.04) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0; }
