@@ -1,16 +1,3 @@
-/**
- * auth.js — Shared authentication + Firebase sync for Faiz's personal hub.
- * Include this script on every page BEFORE page-specific scripts.
- *
- * SETUP: Replace the firebaseConfig below with your own project config.
- * See FIREBASE_SETUP.md for step-by-step instructions.
- *
- * To change the password:
- *  1. Open browser console on any page.
- *  2. Run: await hashPassword('yourNewPassword')
- *  3. Copy the output and replace PASS_HASH below.
- */
-
 // ─── FIREBASE CONFIG ──────────────────────────────────────────────────────────
 // Replace this entire object with your Firebase project config
 const FIREBASE_CONFIG = {
