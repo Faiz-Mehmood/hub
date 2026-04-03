@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FAIZ — Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script src="auth.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080b10;
+    --bg2: #0d1117;
+    --surface: #111820;
+    --border: #1e2a38;
+    --accent: #00d4ff;
+    --accent2: #7b61ff;
+    --accent3: #ff4d6d;
+    --text: #e8f0fe;
+    --muted: #4a6080;
+    --glow: rgba(0, 212, 255, 0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  #cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: screen;
+  }
+  #cursor { transition:opacity 0.15s,width 0.15s,height 0.15s; }
+  #cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    opacity: 0.5;
+    transition: width 0.25s, height 0.25s, opacity 0.2s;
+  }
+
+  body.on-link #cursor { width:20px;height:20px;opacity:1; }
+  body.on-link #cursor-ring { width:52px;height:52px;opacity:0.8; }
+
+  /* GRID BACKGROUND */
+  #grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NOISE OVERLAY */
+  #noise {
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* FLOATING ORBS */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.18;
+  }
+  .orb-1 { width: 500px; height: 500px; background: var(--accent2); top: -150px; left: -150px; }
+  .orb-2 { width: 400px; height: 400px; background: var(--accent); bottom: -100px; right: -100px; }
+  .orb-3 { width: 300px; height: 300px; background: var(--accent3); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 3rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,11,16,0.7);
+    backdrop-filter: blur(20px);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: 0 0 20px var(--accent);
+  }
+  .nav-status {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin: 0 auto;
+  }
+  .nav-status span { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+  }
+
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 14vw, 11rem);
+    line-height: 0.9;
+    letter-spacing: 8px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    max-width: 400px;
+    opacity: 0;
+    margin-bottom: 3rem;
+    font-weight: 300;
+  }
+
+  .scroll-hint {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 4px;
+    color: var(--muted);
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .scroll-hint::before, .scroll-hint::after {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CARDS SECTION */
+  .cards-section {
+    position: relative;
+    z-index: 1;
+    padding: 4rem 2rem 8rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    cursor: none;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.3s, transform 0.3s;
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(0,212,255,0.08) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    border-radius: 16px;
+  }
+  .card:hover::before { opacity: 1; }
+  .card:hover { border-color: var(--card-accent, var(--accent)); transform: translateY(-6px); }
+
+  .card-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--card-icon-bg, rgba(0,212,255,0.1));
+    border: 1px solid var(--card-accent, rgba(0,212,255,0.2));
+  }
+
+  .card-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+  }
+
+  .card-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .card-arrow {
+    position: absolute;
+    bottom: 1.8rem;
+    right: 1.8rem;
+    width: 32px; height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+    transition: border-color 0.3s, color 0.3s, transform 0.3s;
+  }
+  .card:hover .card-arrow {
+    border-color: var(--card-accent, var(--accent));
+    color: var(--card-accent, var(--accent));
+    transform: rotate(45deg);
+  }
+
+  /* BOTTOM BAR */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  /* SCANLINE */
+  .scanline {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    z-index: 200;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="grid-bg"></div>
+<div id="noise"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="scanline" id="scanline"></div>
+
+<nav>
+  <div class="nav-logo">FAIZ</div>
+  <div class="nav-status">STATUS: <span>ONLINE</span> // PAGES: <span>04</span></div>
+</nav>
+
+<section class="hero">
+  <div class="hero-tag" id="tag">Personal Dashboard</div>
+  <h1 class="hero-title" id="title">MY HUB</h1>
+  <p class="hero-sub" id="sub">Your personal command center — everything in one place.</p>
+  <div class="scroll-hint" id="hint">EXPLORE BELOW</div>
+</section>
+
+<section class="cards-section">
+  <div class="section-label">— SELECT A DESTINATION —</div>
+  <div class="cards-grid">
+
+    <a class="card" href="portfolio.html" style="--card-accent:#00d4ff; --card-icon-bg: rgba(0,212,255,0.1);">
+      <div class="card-icon">🧑‍💻</div>
+      <div class="card-num">02 / 04</div>
+      <div class="card-title">PORTFOLIO</div>
+      <p class="card-desc">Your personal space to showcase projects, skills, and everything about you.</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a class="card" href="gym.html" style="--card-accent:#ff4d6d; --card-icon-bg: rgba(255,77,109,0.1);">
+      <div class="card-icon">🏋️</div>
+      <div class="card-num">01 / 04</div>
+      <div class="card-title">GYM LOG</div>
+      <p class="card-desc">Track your workouts, sets, reps, and weights. Stay consistent and crush your goals.</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a class="card" href="study.html" style="--card-accent:#7b61ff; --card-icon-bg: rgba(123,97,255,0.1);">
+      <div class="card-icon">📚</div>
+      <div class="card-num">03 / 04</div>
+      <div class="card-title">STUDY NOTES</div>
+      <p class="card-desc">Capture lecture notes, topics, and revision summaries — all organized and searchable.</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a class="card" href="todo.html" style="--card-accent:#00e5a0; --card-icon-bg: rgba(0,229,160,0.1);">
+      <div class="card-icon">✅</div>
+      <div class="card-num">04 / 04</div>
+      <div class="card-title">TO-DO LIST</div>
+      <p class="card-desc">Manage your daily tasks. Add, complete, and clear what needs to get done today.</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+  </div>
+</section>
+
+<footer>
+  <p>FAIZ // PERSONAL HUB // 2026</p>
+  <p>BUILT WITH ANIME.JS</p>
+</footer>
+
+<script>
+  // CURSOR
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+  document.addEventListener('mouseover',e=>{ if(e.target.closest('a,button,input,textarea,select')) document.body.classList.add('on-link'); else document.body.classList.remove('on-link'); });
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.style.width = '20px'; cursor.style.height = '20px'; ring.style.width = '52px'; ring.style.height = '52px'; });
+    el.addEventListener('mouseleave', () => { cursor.style.width = '12px'; cursor.style.height = '12px'; ring.style.width = '36px'; ring.style.height = '36px'; });
+  });
+
+  // SCANLINE ANIMATION
+  anime({ targets: '#scanline', top: ['0%', '100%'], duration: 3000, easing: 'linear', loop: true, delay: 1000 });
+
+  // ORB FLOAT
+  anime({ targets: '.orb-1', translateX: [0, 60, 0], translateY: [0, -40, 0], duration: 8000, easing: 'easeInOutSine', loop: true });
+  anime({ targets: '.orb-2', translateX: [0, -50, 0], translateY: [0, 30, 0], duration: 10000, easing: 'easeInOutSine', loop: true });
+  anime({ targets: '.orb-3', scale: [1, 1.3, 1], opacity: [0.18, 0.1, 0.18], duration: 6000, easing: 'easeInOutSine', loop: true });
+
+  // HERO ENTRANCE
+  anime.timeline({ easing: 'easeOutExpo' })
+    .add({ targets: '#tag', opacity: [0,1], translateY: [20,0], duration: 800 })
+    .add({ targets: '#title', opacity: [0,1], translateY: [60,0], duration: 1000 }, '-=400')
+    .add({ targets: '#sub', opacity: [0,1], translateY: [20,0], duration: 800 }, '-=600')
+    .add({ targets: '#hint', opacity: [0,0.6], duration: 600 }, '-=200');
+
+  // CARDS STAGGER
+  anime({
+    targets: '.card',
+    opacity: [0, 1],
+    translateY: [40, 0],
+    delay: anime.stagger(120, { start: 600 }),
+    duration: 800,
+    easing: 'easeOutQuart'
+  });
+
+  applyAuthUI();
+  // CARD MOUSE GLOW
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      card.style.setProperty('--mx', x + '%');
+      card.style.setProperty('--my', y + '%');
+    });
+  });
+</script>
+</body>
+</html>
